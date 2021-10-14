@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
+const Transaction = require("../models/Transaction");
 
 const emailValid =
   /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -17,7 +18,7 @@ const resolvers = {
   },
 
   Mutation: {
-    // Auth
+    /* Auth */
     async signup(_parent, args, _context, _info) {
       try {
         // Valid Email or Password
@@ -329,6 +330,103 @@ const resolvers = {
         jwt: token,
         user: updatedUser,
       };
+    },
+
+    /* Transactions */
+    async transactions(_parent, args, _context, _info) {
+      /* Getting Transaction Parties' Data */
+      const payer = await User.findById(args.payer);
+      const payee = await User.findById(args.payee);
+
+      if (args.amount > payer.balance) {
+        return {
+          error: "Insufficient Funds",
+        };
+      }
+
+      /* Creating Transaction Record */
+      const transaction = new Transaction({
+        payer: {
+          _id: payer._id,
+          name: payer.name,
+          email: payer.email,
+        },
+        payee: {
+          _id: payee._id,
+          name: payee.name,
+          email: payee.email,
+        },
+        amount: args.amount,
+      });
+      const updatedTransaction = await transaction.save();
+
+      /* Updating Party Transaction Record */
+      payer.transactions.unshift({
+        _id: updatedTransaction._id,
+        category: "withdrawal",
+        party: {
+          _id: payee._id,
+          name: payee.email,
+          email: payee.email,
+        },
+        amount: updatedTransaction.amount,
+      });
+      payer.markModified("transactions");
+      payer.balance -= updatedTransaction.amount;
+      payer.markModified("balance");
+      const updatedPayer = await payer.save();
+
+      payee.transactions.unshift({
+        _id: updatedTransaction._id,
+        category: "deposit",
+        party: {
+          _id: payer._id,
+          name: payer.email,
+          email: payer.email,
+        },
+        amount: updatedTransaction.amount,
+      });
+      payee.markModified("transactions");
+      payee.balance += updatedTransaction.amount;
+      payee.markModified("balance");
+      const updatedPayee = await payee.save();
+
+      /* Sending Email of Transaction */
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: "errorless.nits@gmail.com",
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+
+      // Payer Mail
+      transporter.sendMail(
+        {
+          from: '"Rusafe" <errorless.nits@gmail.com>',
+          to: `${payer.email}`,
+          subject: "Payment Made | Rusafe",
+          text: `Payment to ${payee.name} of amount ₹ ${transaction.amount} was made successfully. Current balance is ₹ ${updatedPayer.balance}`,
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+
+      //Payee Mail
+      transporter.sendMail(
+        {
+          from: '"Rusafe" <errorless.nits@gmail.com>',
+          to: `${payee.email}`,
+          subject: "Payment Received | Rusafe",
+          text: `Payment from ${payer.name} of amount ₹ ${transaction.amount} was received successfully. Current balance is ₹ ${updatedPayee.balance}`,
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
     },
   },
 };

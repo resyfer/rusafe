@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const transactionSchema = new mongoose.Schema({
-  category: {
-    type: String,
-    enum: ["deposit", "withdrawal"],
-  },
   payer: {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,6 +9,10 @@ const transactionSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true, "Please enter payer name"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please enter payer email"],
     },
   },
   payee: {
@@ -23,6 +23,10 @@ const transactionSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true, "Please enter payee name"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please enter payee email"],
     },
   },
   amount: {

@@ -9,26 +9,13 @@ const typeDefs = gql`
   type UserTransactionParty {
     _id: ID
     email: String
-    amount: Float
   }
 
   type UserTransaction {
     _id: ID
     category: String
     party: UserTransactionParty
-  }
-
-  type UserAccount {
-    _id: ID
-    name: String
-    branch: String
-    iifsc: String
-  }
-
-  type Card {
-    number: Int
-    holder: String
-    expiry: [Int]
+    amount: Float
   }
 
   type Otp {
@@ -51,8 +38,6 @@ const typeDefs = gql`
     balance: Float
     verified: Boolean
     transactions: [UserTransaction]
-    accounts: [UserAccount]
-    cards: [Card]
     phone: Float
     otp: Otp
     authString: AuthString
@@ -70,6 +55,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    # Auth
     signup(
       name: String!
       username: String!
@@ -92,6 +78,9 @@ const typeDefs = gql`
       authString: String!
       newPassword: String!
     ): Credentials
+
+    # Transactions
+    transactions(payer: ID!, payee: ID!, amount: Float!): Void
   }
 `;
 

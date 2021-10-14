@@ -44,51 +44,18 @@ const userSchema = new mongoose.Schema({
           type: mongoose.Schema.Types.ObjectId,
           required: [true, "Please enter valid reference to transaction"],
         },
+        name: {
+          type: String,
+          required: [true, "Please enter party's name"],
+        },
         email: {
           type: String,
           required: [true, "Please enter party's email"],
         },
-        amount: {
-          type: Number,
-          required: [true, "Please enter the transaction about"],
-        },
       },
-    },
-  ],
-  accounts: [
-    {
-      // Bank ID
-      _id: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-      },
-      name: {
-        type: String,
-        required: [true, "Please enter bank name"],
-      },
-      branch: {
-        type: String,
-        required: [true, "Please enter bank branch"],
-      },
-      iifsc: {
-        type: String,
-        required: [true, "Please enter bank IIFSC"],
-      },
-    },
-  ],
-  cards: [
-    {
-      number: {
+      amount: {
         type: Number,
-        required: [true, "Please enter card number"],
-      },
-      holder: {
-        type: String,
-        required: [true, "Please enter holder name"],
-      },
-      expiry: {
-        type: [Number],
-        required: [true, "Please enter card expiry date"],
+        required: [true, "Please enter the transaction about"],
       },
     },
   ],
