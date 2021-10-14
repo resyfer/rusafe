@@ -76,6 +76,8 @@ const typeDefs = gql`
     otpVerify(email: String!, otp: String!): Credentials
 
     login(identifier: String!, password: String!): Credentials
+
+    newOtp(email: String!): Void
   }
 `;
 

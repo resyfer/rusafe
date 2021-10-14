@@ -179,7 +179,58 @@ const resolvers = {
         user,
       };
     },
-    // async newOtp() {},
+
+    async newOtp(_parent, args, _context, _info) {
+      const user = await User.findOne({ email: args.email });
+
+      if (!user) {
+        return {
+          error: "User doesn't exist",
+        };
+      }
+
+      if (user.verified) {
+        return {
+          error: "User already verfied",
+        };
+      }
+
+      // Otp Generate
+      const otp = Math.trunc(Math.random() * 99999999)
+        .toString()
+        .padStart(8, "0");
+
+      user.otp.value = otp;
+      user.otp.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
+      await user.save();
+
+      let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: "errorless.nits@gmail.com",
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+
+      transporter.sendMail(
+        {
+          from: '"Rusafe" <errorless.nits@gmail.com>',
+          to: `${updatedUser.email}`,
+          subject: "New OTP Requested | Rusafe",
+          text: `${updatedUser.name} request a new OTP. Your new OTP is ${updatedUser.otp.value} and it will expire in 48 hours from this mail.`,
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+
+      return {
+        error: null,
+      };
+    },
+
     // async forgotPassword() {},
   },
 };
