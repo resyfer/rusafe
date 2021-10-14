@@ -39,7 +39,6 @@ const resolvers = {
         const userExists = await User.findOne({
           $or: [{ username: args.username }, { email: args.email }],
         });
-
         if (userExists) {
           return {
             error: "Username / Email already taken",
@@ -106,8 +105,9 @@ const resolvers = {
 
     async otpVerify(_parent, args, _context, _info) {
       try {
-        const user = await User.findOne({ email: args.email });
-
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
         if (!user) {
           return {
             error: "User not found",
@@ -146,90 +146,111 @@ const resolvers = {
     },
 
     async login(_parent, args, _context, _info) {
-      const user = await User.findOne({
-        $or: [{ username: args.identifier }, { email: args.identifier }],
-      });
+      try {
+        if (!emailValid.test(args.email)) {
+          return {
+            error: "Please enter valid email",
+          };
+        }
 
-      if (!user) {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
+        }
+
+        if (!user.verified) {
+          return {
+            error: "User not verified. Please verify your OTP",
+          };
+        }
+
+        const correctPassword = await bcrypt.compare(
+          args.password,
+          user.password
+        );
+
+        if (!correctPassword) {
+          return {
+            error: "Incorrect Password",
+          };
+        }
+
+        const token = jwt.sign(user._id.toString(), process.env.SECRET);
+
         return {
-          error: "User doesn't exist",
+          jwt: token,
+          user,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
         };
       }
-
-      if (!user.verified) {
-        return {
-          error: "User not verified. Please verify your OTP",
-        };
-      }
-
-      const correctPassword = await bcrypt.compare(
-        args.password,
-        user.password
-      );
-
-      if (!correctPassword) {
-        return {
-          error: "Incorrect Password",
-        };
-      }
-
-      const token = jwt.sign(user._id.toString(), process.env.SECRET);
-
-      return {
-        jwt: token,
-        user,
-      };
     },
 
     async newOtp(_parent, args, _context, _info) {
-      const user = await User.findOne({ email: args.email });
-
-      if (!user) {
-        return {
-          error: "User doesn't exist",
-        };
-      }
-
-      if (user.verified) {
-        return {
-          error: "User already verfied",
-        };
-      }
-
-      // Otp Generate
-      const otp = Math.trunc(Math.random() * 99999999)
-        .toString()
-        .padStart(8, "0");
-
-      user.otp.value = otp;
-      user.otp.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
-      await user.save();
-
-      let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: "errorless.nits@gmail.com",
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-
-      transporter.sendMail(
-        {
-          from: '"Rusafe" <errorless.nits@gmail.com>',
-          to: `${updatedUser.email}`,
-          subject: "New OTP Requested | Rusafe",
-          text: `${updatedUser.name} request a new OTP. Your new OTP is ${updatedUser.otp.value} and it will expire in 48 hours from this mail.`,
-        },
-        (error) => {
-          console.log(error);
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
         }
-      );
 
-      return {
-        error: null,
-      };
+        if (user.verified) {
+          return {
+            error: "User already verfied",
+          };
+        }
+
+        // Otp Generate
+        const otp = Math.trunc(Math.random() * 99999999)
+          .toString()
+          .padStart(8, "0");
+
+        user.otp.value = otp;
+        user.otp.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
+        await user.save();
+
+        let transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: "errorless.nits@gmail.com",
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+
+        transporter.sendMail(
+          {
+            from: '"Rusafe" <errorless.nits@gmail.com>',
+            to: `${updatedUser.email}`,
+            subject: "New OTP Requested | Rusafe",
+            text: `${updatedUser.name} request a new OTP. Your new OTP is ${updatedUser.otp.value} and it will expire in 48 hours from this mail.`,
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+
+        return {
+          error: null,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
+        };
+      }
     },
 
     //Forgot Password
@@ -294,139 +315,153 @@ const resolvers = {
 
     // Generate AlphaNumeric String First
     async forgotPassword(_parent, args, _context, _info) {
-      const user = await User.findOne({
-        $or: [{ username: args.identifier }, { email: args.identifier }],
-      });
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
 
-      if (!user) {
+        if (!user) {
+          return {
+            error: "User not found",
+          };
+        }
+
+        if (Date.now() > user.authString.expiry) {
+          return {
+            error: "Authentication String Expired",
+          };
+        }
+
+        if (args.authString !== user.authString.value) {
+          return {
+            error: "Incorrect Authentication String",
+          };
+        }
+
+        // Password Hash
+        const salt = await bcrypt.genSalt(10);
+        const hashedNewPassword = await bcrypt.hash(args.newPassword, salt);
+
+        user.password = hashedNewPassword;
+        user.authString.expiry = 0;
+        const updatedUser = await user.save();
+
+        const token = jwt.sign(updatedUser._id.toString(), process.env.SECRET);
+
         return {
-          error: "User not found",
+          jwt: token,
+          user: updatedUser,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
         };
       }
-
-      if (Date.now() > user.authString.expiry) {
-        return {
-          error: "Authentication String Expired",
-        };
-      }
-
-      if (args.authString !== user.authString.value) {
-        return {
-          error: "Incorrect Authentication String",
-        };
-      }
-
-      // Password Hash
-      const salt = await bcrypt.genSalt(10);
-      const hashedNewPassword = await bcrypt.hash(args.newPassword, salt);
-
-      user.password = hashedNewPassword;
-      user.authString.expiry = 0;
-      const updatedUser = await user.save();
-
-      const token = jwt.sign(updatedUser._id.toString(), process.env.SECRET);
-
-      return {
-        jwt: token,
-        user: updatedUser,
-      };
     },
 
     /* Transactions */
     async transactions(_parent, args, _context, _info) {
-      /* Getting Transaction Parties' Data */
-      const payer = await User.findById(args.payer);
-      const payee = await User.findById(args.payee);
+      try {
+        /* Getting Transaction Parties' Data */
+        const payer = await User.findById(args.payer);
+        const payee = await User.findById(args.payee);
 
-      if (args.amount > payer.balance) {
+        if (args.amount > payer.balance) {
+          return {
+            error: "Insufficient Funds",
+          };
+        }
+
+        /* Creating Transaction Record */
+        const transaction = new Transaction({
+          payer: {
+            _id: payer._id,
+            name: payer.name,
+            email: payer.email,
+          },
+          payee: {
+            _id: payee._id,
+            name: payee.name,
+            email: payee.email,
+          },
+          amount: args.amount,
+        });
+        const updatedTransaction = await transaction.save();
+
+        /* Updating Party Transaction Record */
+        payer.transactions.unshift({
+          _id: updatedTransaction._id,
+          category: "withdrawal",
+          party: {
+            _id: payee._id,
+            name: payee.email,
+            email: payee.email,
+          },
+          amount: updatedTransaction.amount,
+        });
+        payer.markModified("transactions");
+        payer.balance -= updatedTransaction.amount;
+        payer.markModified("balance");
+        const updatedPayer = await payer.save();
+
+        payee.transactions.unshift({
+          _id: updatedTransaction._id,
+          category: "deposit",
+          party: {
+            _id: payer._id,
+            name: payer.email,
+            email: payer.email,
+          },
+          amount: updatedTransaction.amount,
+        });
+        payee.markModified("transactions");
+        payee.balance += updatedTransaction.amount;
+        payee.markModified("balance");
+        const updatedPayee = await payee.save();
+
+        /* Sending Email of Transaction */
+        let transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: "errorless.nits@gmail.com",
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+
+        // Payer Mail
+        transporter.sendMail(
+          {
+            from: '"Rusafe" <errorless.nits@gmail.com>',
+            to: `${payer.email}`,
+            subject: "Payment Made | Rusafe",
+            text: `Payment to ${payee.name} of amount ₹ ${transaction.amount} was made successfully. Current balance is ₹ ${updatedPayer.balance}`,
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+
+        //Payee Mail
+        transporter.sendMail(
+          {
+            from: '"Rusafe" <errorless.nits@gmail.com>',
+            to: `${payee.email}`,
+            subject: "Payment Received | Rusafe",
+            text: `Payment from ${payer.name} of amount ₹ ${transaction.amount} was received successfully. Current balance is ₹ ${updatedPayee.balance}`,
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+      } catch (err) {
+        console.log(err);
         return {
-          error: "Insufficient Funds",
+          error: "Internal Server Error. Please try again later.",
         };
       }
-
-      /* Creating Transaction Record */
-      const transaction = new Transaction({
-        payer: {
-          _id: payer._id,
-          name: payer.name,
-          email: payer.email,
-        },
-        payee: {
-          _id: payee._id,
-          name: payee.name,
-          email: payee.email,
-        },
-        amount: args.amount,
-      });
-      const updatedTransaction = await transaction.save();
-
-      /* Updating Party Transaction Record */
-      payer.transactions.unshift({
-        _id: updatedTransaction._id,
-        category: "withdrawal",
-        party: {
-          _id: payee._id,
-          name: payee.email,
-          email: payee.email,
-        },
-        amount: updatedTransaction.amount,
-      });
-      payer.markModified("transactions");
-      payer.balance -= updatedTransaction.amount;
-      payer.markModified("balance");
-      const updatedPayer = await payer.save();
-
-      payee.transactions.unshift({
-        _id: updatedTransaction._id,
-        category: "deposit",
-        party: {
-          _id: payer._id,
-          name: payer.email,
-          email: payer.email,
-        },
-        amount: updatedTransaction.amount,
-      });
-      payee.markModified("transactions");
-      payee.balance += updatedTransaction.amount;
-      payee.markModified("balance");
-      const updatedPayee = await payee.save();
-
-      /* Sending Email of Transaction */
-      let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: "errorless.nits@gmail.com",
-          pass: process.env.EMAIL_PASSWORD,
-        },
-      });
-
-      // Payer Mail
-      transporter.sendMail(
-        {
-          from: '"Rusafe" <errorless.nits@gmail.com>',
-          to: `${payer.email}`,
-          subject: "Payment Made | Rusafe",
-          text: `Payment to ${payee.name} of amount ₹ ${transaction.amount} was made successfully. Current balance is ₹ ${updatedPayer.balance}`,
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-
-      //Payee Mail
-      transporter.sendMail(
-        {
-          from: '"Rusafe" <errorless.nits@gmail.com>',
-          to: `${payee.email}`,
-          subject: "Payment Received | Rusafe",
-          text: `Payment from ${payer.name} of amount ₹ ${transaction.amount} was received successfully. Current balance is ₹ ${updatedPayee.balance}`,
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
     },
   },
 };

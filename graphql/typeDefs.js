@@ -65,11 +65,11 @@ const typeDefs = gql`
       phone: Float!
     ): Void
 
-    otpVerify(email: String!, otp: String!): Credentials
+    otpVerify(identifier: String!, otp: String!): Credentials
 
     login(identifier: String!, password: String!): Credentials
 
-    newOtp(email: String!): Void
+    newOtp(identifier: String!): Void
 
     # Forgot Password
     generateString(identifier: String!): Void
