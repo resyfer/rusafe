@@ -87,17 +87,15 @@ const userSchema = new mongoose.Schema({
         required: [true, "Please enter holder name"],
       },
       expiry: {
-        type: [String],
+        type: [Number],
         required: [true, "Please enter card expiry date"],
       },
     },
   ],
-  otp: [
-    {
-      value: String,
-      expiry: Number,
-    },
-  ],
+  otp: {
+    value: String,
+    expiry: Number,
+  },
 });
 
 const User = mongoose.model("user", userSchema);
