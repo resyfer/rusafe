@@ -37,6 +37,7 @@ const typeDefs = gql`
     dob: [Int]
     balance: Float
     verified: Boolean
+    img: String
     transactions: [UserTransaction]
     phone: Float
     otp: Otp
@@ -44,8 +45,16 @@ const typeDefs = gql`
     error: String
   }
 
+  type PreviewUser {
+    _id: ID
+    name: String
+    email: String
+    img: String
+  }
+
   type Query {
-    users: [User]
+    user(jwt: String!): User
+    previewUser(identifier: String!): PreviewUser
   }
 
   type Credentials {
@@ -62,6 +71,7 @@ const typeDefs = gql`
       email: String!
       password: String!
       dob: [Int!]!
+      img: String
       phone: Float!
     ): Void
 

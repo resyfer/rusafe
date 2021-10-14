@@ -12,8 +12,50 @@ const passwordValid = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,100}$/;
 
 const resolvers = {
   Query: {
-    async users() {
-      return await User.find();
+    async user(_parent, args, _context, _info) {
+      try {
+        const uid = jwt.verify(args.jwt, process.env.SECRET);
+
+        const user = await User.findById(uid);
+
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
+        }
+
+        return user;
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
+        };
+      }
+    },
+
+    async previewUser(_parent, args, _context, _info) {
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
+        }
+
+        return {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
+        };
+      }
     },
   },
 
@@ -61,6 +103,9 @@ const resolvers = {
           email: args.email,
           password: hashedPassword,
           dob: args.dob,
+          img:
+            args.img ||
+            "https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no",
           phone: args.phone,
           otp: {
             value: otp,
@@ -145,6 +190,7 @@ const resolvers = {
       }
     },
 
+    // TODO: Update Login Auth System to 2FA using Auth Strings
     async login(_parent, args, _context, _info) {
       try {
         if (!emailValid.test(args.email)) {

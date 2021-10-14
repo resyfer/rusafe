@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  img: {
+    type: String,
+    default:
+      "https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no",
+  },
   transactions: [
     {
       _id: {
