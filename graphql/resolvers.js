@@ -65,7 +65,6 @@ const resolvers = {
           },
         });
         const updatedUser = await user.save();
-        console.log(updatedUser);
 
         //Email Sent
         let transporter = nodemailer.createTransport({
@@ -101,10 +100,45 @@ const resolvers = {
       }
     },
 
-    async login() {},
-    async otpVerify() {},
-    async newOtp() {},
-    async forgotPassword() {},
+    async otpVerify(_parent, args, _context, _info) {
+      try {
+        const user = await User.findOne({ email: args.email });
+
+        if (!user) {
+          return {
+            error: "User not found",
+          };
+        }
+
+        if (Date.now() > user.otp.expiry) {
+          return {
+            error: "OTP Expired, please request a new OTP",
+          };
+        }
+
+        if (user.otp.value !== args.otp) {
+          return {
+            error: "OTP doesn't match",
+          };
+        }
+
+        user.verified = true;
+        user.otp.expiry = 0;
+
+        const updatedUser = await user.save();
+
+        return updatedUser;
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error please try again",
+        };
+      }
+    },
+
+    // async login() {},
+    // async newOtp() {},
+    // async forgotPassword() {},
   },
 };
 

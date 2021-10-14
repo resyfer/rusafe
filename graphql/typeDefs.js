@@ -49,6 +49,7 @@ const typeDefs = gql`
     accounts: [UserAccount]
     cards: [Card]
     otp: Otp
+    error: String
   }
 
   type Query {
@@ -63,6 +64,8 @@ const typeDefs = gql`
       password: String!
       dob: [Int!]!
     ): Void
+
+    otpVerify(email: String!, otp: String!): User
   }
 `;
 
