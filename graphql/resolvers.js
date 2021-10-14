@@ -231,7 +231,105 @@ const resolvers = {
       };
     },
 
-    // async forgotPassword() {},
+    //Forgot Password
+    async generateString(_parent, args, _context, _info) {
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+
+        if (!user) {
+          return {
+            error: "User not found",
+          };
+        }
+
+        if (!user.verified) {
+          return {
+            error: "Verify OTP first",
+          };
+        }
+
+        const authenticationString = Math.trunc(
+          Math.random() * 1125899906842624 //2^50
+        ).toString(36);
+
+        user.authString.value = authenticationString;
+        user.authString.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
+
+        const updatedUser = await user.save();
+
+        let transporter = nodemailer.createTransport({
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
+          auth: {
+            user: "errorless.nits@gmail.com",
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        });
+
+        transporter.sendMail(
+          {
+            from: '"Rusafe" <errorless.nits@gmail.com>',
+            to: `${updatedUser.email}`,
+            subject: "Forgot Password | Rusafe",
+            text: `${updatedUser.name} forgot their password. Your authentication string is ${updatedUser.authString.value} and it will expire in 48 hours from this mail.`,
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+        return {
+          error: null,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal server error. Please try again later",
+        };
+      }
+    },
+
+    // Generate AlphaNumeric String First
+    async forgotPassword(_parent, args, _context, _info) {
+      const user = await User.findOne({
+        $or: [{ username: args.identifier }, { email: args.identifier }],
+      });
+
+      if (!user) {
+        return {
+          error: "User not found",
+        };
+      }
+
+      if (Date.now() > user.authString.expiry) {
+        return {
+          error: "Authentication String Expired",
+        };
+      }
+
+      if (args.authString !== user.authString.value) {
+        return {
+          error: "Incorrect Authentication String",
+        };
+      }
+
+      // Password Hash
+      const salt = await bcrypt.genSalt(10);
+      const hashedNewPassword = await bcrypt.hash(args.newPassword, salt);
+
+      user.password = hashedNewPassword;
+      user.authString.expiry = 0;
+      const updatedUser = await user.save();
+
+      const token = jwt.sign(updatedUser._id.toString(), process.env.SECRET);
+
+      return {
+        jwt: token,
+        user: updatedUser,
+      };
+    },
   },
 };
 

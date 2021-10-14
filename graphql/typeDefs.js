@@ -36,6 +36,11 @@ const typeDefs = gql`
     expiry: Int
   }
 
+  type AuthString {
+    value: String
+    expiry: Int
+  }
+
   type User {
     _id: ID
     name: String
@@ -48,8 +53,9 @@ const typeDefs = gql`
     transactions: [UserTransaction]
     accounts: [UserAccount]
     cards: [Card]
-    otp: Otp
     phone: Float
+    otp: Otp
+    authString: AuthString
     error: String
   }
 
@@ -78,6 +84,14 @@ const typeDefs = gql`
     login(identifier: String!, password: String!): Credentials
 
     newOtp(email: String!): Void
+
+    # Forgot Password
+    generateString(identifier: String!): Void
+    forgotPassword(
+      identifier: String!
+      authString: String!
+      newPassword: String!
+    ): Credentials
   }
 `;
 

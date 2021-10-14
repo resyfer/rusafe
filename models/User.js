@@ -100,6 +100,10 @@ const userSchema = new mongoose.Schema({
     value: String,
     expiry: Number,
   },
+  authString: {
+    value: String,
+    expiry: Number,
+  },
 });
 
 const User = mongoose.model("user", userSchema);
