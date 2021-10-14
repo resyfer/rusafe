@@ -92,6 +92,10 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+  phone: {
+    type: Number,
+    required: true,
+  },
   otp: {
     value: String,
     expiry: Number,

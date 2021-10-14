@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+
 const User = require("../models/User");
 
 const emailValid =
@@ -59,6 +61,7 @@ const resolvers = {
           email: args.email,
           password: hashedPassword,
           dob: args.dob,
+          phone: args.phone,
           otp: {
             value: otp,
             expiry: Date.now() + 2 * 24 * 60 * 60 * 1000,
@@ -77,7 +80,7 @@ const resolvers = {
           },
         });
 
-        await transporter.sendMail(
+        transporter.sendMail(
           {
             from: '"Rusafe" <errorless.nits@gmail.com>',
             to: `${updatedUser.email}`,
@@ -127,7 +130,12 @@ const resolvers = {
 
         const updatedUser = await user.save();
 
-        return updatedUser;
+        const token = jwt.sign(updatedUser._id.toString(), process.env.SECRET);
+
+        return {
+          jwt: token,
+          user: updatedUser,
+        };
       } catch (err) {
         console.log(err);
         return {
@@ -136,7 +144,41 @@ const resolvers = {
       }
     },
 
-    // async login() {},
+    async login(_parent, args, _context, _info) {
+      const user = await User.findOne({
+        $or: [{ username: args.identifier }, { email: args.identifier }],
+      });
+
+      if (!user) {
+        return {
+          error: "User doesn't exist",
+        };
+      }
+
+      if (!user.verified) {
+        return {
+          error: "User not verified. Please verify your OTP",
+        };
+      }
+
+      const correctPassword = await bcrypt.compare(
+        args.password,
+        user.password
+      );
+
+      if (!correctPassword) {
+        return {
+          error: "Incorrect Password",
+        };
+      }
+
+      const token = jwt.sign(user._id.toString(), process.env.SECRET);
+
+      return {
+        jwt: token,
+        user,
+      };
+    },
     // async newOtp() {},
     // async forgotPassword() {},
   },

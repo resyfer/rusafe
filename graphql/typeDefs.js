@@ -49,11 +49,18 @@ const typeDefs = gql`
     accounts: [UserAccount]
     cards: [Card]
     otp: Otp
+    phone: Float
     error: String
   }
 
   type Query {
     users: [User]
+  }
+
+  type Credentials {
+    jwt: String
+    user: User
+    error: String
   }
 
   type Mutation {
@@ -63,9 +70,12 @@ const typeDefs = gql`
       email: String!
       password: String!
       dob: [Int!]!
+      phone: Float!
     ): Void
 
-    otpVerify(email: String!, otp: String!): User
+    otpVerify(email: String!, otp: String!): Credentials
+
+    login(identifier: String!, password: String!): Credentials
   }
 `;
 
