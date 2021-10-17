@@ -11,7 +11,9 @@ import App from "./App.vue";
 const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
   uri:
-    process.env.NODE_ENV == "production" ? "http://localhost:5000/graphql" : "",
+    process.env.NODE_ENV == "development"
+      ? "http://localhost:5000/graphql"
+      : "",
 });
 
 const app = createApp({

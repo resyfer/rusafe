@@ -193,12 +193,6 @@ const resolvers = {
     // TODO: Update Login Auth System to 2FA using Auth Strings
     async login(_parent, args, _context, _info) {
       try {
-        if (!emailValid.test(args.email)) {
-          return {
-            error: "Please enter valid email",
-          };
-        }
-
         const user = await User.findOne({
           $or: [{ username: args.identifier }, { email: args.identifier }],
         });

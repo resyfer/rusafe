@@ -5,6 +5,7 @@ const store = createStore({
     return {
       user: null,
       isLoggedIn: false,
+      jwt: null,
     };
   },
   mutations: {

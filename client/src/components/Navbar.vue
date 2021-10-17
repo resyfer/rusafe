@@ -40,10 +40,10 @@ export default {
 
   height: 8vh;
   width: 100%;
-  padding: 0 4vh;
+  padding: 0 7vh;
 
   .logo {
-    height: 70%;
+    height: 60%;
 
     img {
       height: 100%;
@@ -62,13 +62,11 @@ export default {
     text-decoration: none;
     border-radius: 0.5vh;
     color: var(--theme-0-100);
-    font-size: 2.4vh;
+    font-size: 2.3vh;
     cursor: pointer;
 
     &:hover {
-      background-color: var(--theme-4-100);
-      color: var(--theme-9-100);
-
+      color: var(--theme-4-100);
       transition: 0.2s ease-in-out;
     }
   }
