@@ -58,10 +58,12 @@
           Submit
         </button>
       </form>
-      <div class="signup-links" @click="login()">
+      <router-link class="signup-links" to="/login">
         Already registered? Login
-      </div>
+      </router-link>
     </div>
+
+    <!-- TODO: Add Password rules -->
   </div>
 </template>
 
@@ -147,16 +149,11 @@ export default {
       }
     );
 
-    const login = () => {
-      router.push("/login");
-    };
-
     return {
       credentials,
       signup,
       validSignup,
       authData,
-      login,
     };
   },
 };

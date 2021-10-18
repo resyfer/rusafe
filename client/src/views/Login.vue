@@ -27,12 +27,12 @@
           Submit
         </button>
       </form>
-      <div class="sign-up login-links" @click="signup()">
+      <router-link class="sign-up login-links" to="/signup">
         New here? Sign Up
-      </div>
-      <div class="forgot-password login-links" @click="forgotPassword()">
+      </router-link>
+      <router-link class="forgot-password login-links" to="/forgot-password">
         Forgot Password?
-      </div>
+      </router-link>
     </div>
   </div>
 </template>
@@ -101,21 +101,11 @@ export default {
       }
     );
 
-    const signup = () => {
-      router.push("/signup");
-    };
-
-    const forgotPassword = () => {
-      router.push("/forgot-password");
-    };
-
     return {
       credentials,
       login,
       validLogin,
       authData,
-      signup,
-      forgotPassword,
     };
   },
 };
