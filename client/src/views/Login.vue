@@ -6,12 +6,12 @@
       <form>
         <input
           type="text"
-          placeholder="Username / Email"
+          placeholder="Username / Email*"
           v-model="credentials.identifier"
         />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="Password*"
           v-model="credentials.password"
         />
         <button
@@ -27,6 +27,12 @@
           Submit
         </button>
       </form>
+      <div class="sign-up login-links" @click="signup()">
+        New here? Sign Up
+      </div>
+      <div class="forgot-password login-links" @click="forgotPassword()">
+        Forgot Password?
+      </div>
     </div>
   </div>
 </template>
@@ -95,11 +101,21 @@ export default {
       }
     );
 
+    const signup = () => {
+      router.push("/signup");
+    };
+
+    const forgotPassword = () => {
+      router.push("/forgot-password");
+    };
+
     return {
       credentials,
       login,
       validLogin,
       authData,
+      signup,
+      forgotPassword,
     };
   },
 };
@@ -172,6 +188,7 @@ div.login {
         text-decoration: none;
         padding: 2vh 5vh;
         margin-top: 3vh;
+        margin-bottom: 2vh;
         border-radius: 0.75vh;
         text-transform: uppercase;
         cursor: pointer;
@@ -198,6 +215,13 @@ div.login {
           }
         }
       }
+    }
+
+    .login-links {
+      color: var(--theme-0-100);
+      margin-top: 1vh;
+      text-decoration: underline;
+      cursor: pointer;
     }
   }
 }

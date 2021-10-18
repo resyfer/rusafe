@@ -7,25 +7,25 @@
         <input
           type="text"
           required
-          placeholder="Name"
+          placeholder="Name*"
           v-model.trim="credentials.name"
         />
         <input
           type="text"
           required
-          placeholder="Username"
+          placeholder="Username*"
           v-model.trim="credentials.username"
         />
         <input
           type="text"
           required
-          placeholder="Email"
+          placeholder="Email*"
           v-model.trim="credentials.email"
         />
         <input
           type="password"
           required
-          placeholder="Password"
+          placeholder="Password*"
           v-model="credentials.password"
         />
         <input
@@ -35,7 +35,7 @@
         />
         <input
           type="tel"
-          placeholder="Phone Number (Without Region Codes)"
+          placeholder="Phone Number (Without Region Codes)*"
           v-model.number="credentials.phone"
         />
         <button
@@ -58,6 +58,9 @@
           Submit
         </button>
       </form>
+      <div class="signup-links" @click="login()">
+        Already registered? Login
+      </div>
     </div>
   </div>
 </template>
@@ -140,11 +143,16 @@ export default {
       }
     );
 
+    const login = () => {
+      router.push("/login");
+    };
+
     return {
       credentials,
       signup,
       validSignup,
       authData,
+      login,
     };
   },
 };
@@ -215,6 +223,7 @@ div.login {
         text-decoration: none;
         padding: 2vh 5vh;
         margin-top: 1vh;
+        margin-bottom: 1vh;
         border-radius: 0.75vh;
         text-transform: uppercase;
         cursor: pointer;
@@ -241,6 +250,13 @@ div.login {
           }
         }
       }
+    }
+
+    .signup-links {
+      color: var(--theme-0-100);
+      margin-top: 1vh;
+      text-decoration: underline;
+      cursor: pointer;
     }
   }
 }
