@@ -70,6 +70,7 @@
 <script>
 import { computed, reactive, ref } from "vue";
 import { useMutation } from "@vue/apollo-composable";
+import Cookies from "js-cookie";
 import router from "../router/index";
 import gql from "graphql-tag";
 
@@ -82,6 +83,11 @@ export default {
   setup() {
     // Page Title
     document.title = "Sign Up | Rusafe";
+
+    // Get JWT
+    if (Cookies.get("jwt")) {
+      router.push("/profile");
+    }
 
     // Form Data
     const credentials = reactive({

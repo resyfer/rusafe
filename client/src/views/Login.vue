@@ -66,6 +66,11 @@ export default {
     // Page Title
     document.title = "Login | Rusafe";
 
+    // Get JWT
+    if (Cookies.get("jwt")) {
+      router.push("/profile");
+    }
+
     const store = useStore();
 
     // Form Data

@@ -42,6 +42,11 @@ export default {
     const route = useRoute();
     const store = useStore();
 
+    // Get JWT
+    if (Cookies.get("jwt")) {
+      router.push("/profile");
+    }
+
     const credentials = reactive({
       identifier: route.params.identifier,
       otp: "",
