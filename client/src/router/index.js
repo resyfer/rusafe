@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
 import Profile from "../views/Profile.vue";
+import OtpVerify from "../views/OtpVerify.vue";
 
 const routes = [
   {
@@ -25,6 +26,11 @@ const routes = [
     path: "/profile",
     name: "Profile",
     component: Profile,
+  },
+  {
+    path: "/otp-verify/:identifier",
+    name: "Otp Verify",
+    component: OtpVerify,
   },
 ];
 

@@ -139,6 +139,10 @@ export default {
             authData.value.error = result.data.signup.error;
             return;
           }
+          router.push({
+            name: "Otp Verify",
+            params: { identifier: credentials.username },
+          });
         },
       }
     );
