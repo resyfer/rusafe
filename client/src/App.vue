@@ -38,7 +38,6 @@ export default {
 
       watch(result, () => {
         if (!result.value.user.error) {
-          console.log(result.value);
           store.commit("userLoggedIn", result.value.user);
           router.push("/profile");
         } else {

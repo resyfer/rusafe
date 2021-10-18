@@ -160,7 +160,7 @@ const resolvers = {
 
         if (Date.now() > user.otp.expiry) {
           return {
-            error: "OTP Expired, please request a new OTP",
+            error: "OTP Expired. Please request a new OTP",
           };
         }
 

@@ -17,7 +17,11 @@
         Verify
       </button>
     </form>
-    <router-link class="new-otp" to="/new-otp">
+    <router-link
+      v-if="authDetails.error === 'OTP Expired. Please request a new OTP'"
+      class="new-otp"
+      to="/new-otp"
+    >
       Expired OTP? Request New
     </router-link>
   </div>
