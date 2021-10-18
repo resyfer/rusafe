@@ -34,7 +34,6 @@ const typeDefs = gql`
     username: String
     email: String
     password: String
-    dob: [Int]
     balance: Float
     verified: Boolean
     img: String
@@ -70,7 +69,6 @@ const typeDefs = gql`
       username: String!
       email: String!
       password: String!
-      dob: [Int!]!
       img: String
       phone: Float!
     ): Void

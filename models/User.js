@@ -17,10 +17,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter password"],
   },
-  dob: {
-    type: [Number],
-    required: true,
-  },
   balance: {
     type: Number,
     default: 10.0, //For testing

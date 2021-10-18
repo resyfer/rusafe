@@ -1,26 +1,57 @@
 <template>
   <div class="login">
-    <div class="title">Login</div>
+    <div class="title">Sign Up</div>
     <div class="login-form">
       <div class="error" v-if="authData.error">{{ authData.error }}</div>
       <form>
         <input
           type="text"
-          placeholder="Username / Email"
-          v-model="credentials.identifier"
+          required
+          placeholder="Name"
+          v-model.trim="credentials.name"
+        />
+        <input
+          type="text"
+          required
+          placeholder="Username"
+          v-model.trim="credentials.username"
+        />
+        <input
+          type="text"
+          required
+          placeholder="Email"
+          v-model.trim="credentials.email"
         />
         <input
           type="password"
+          required
           placeholder="Password"
           v-model="credentials.password"
         />
+        <input
+          type="text"
+          placeholder="Profile Picture Link"
+          v-model.trim="credentials.img"
+        />
+        <input
+          type="tel"
+          placeholder="Phone Number (Without Region Codes)"
+          v-model.number="credentials.phone"
+        />
         <button
           type="submit"
-          v-bind="{ disabled: !validLogin }"
+          v-bind="{ disabled: !validSignup }"
           @click.prevent="
-            login({
-              identifier: credentials.identifier,
+            signup({
+              name: credentials.name,
+              username: credentials.username,
+              email: credentials.email,
               password: credentials.password,
+              img:
+                credentials.img !== ''
+                  ? credentials.img
+                  : 'https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no',
+              phone: credentials.phone,
             })
           "
         >
@@ -38,12 +69,15 @@ import router from "../router/index";
 import gql from "graphql-tag";
 import Cookies from "js-cookie";
 
+const emailValid = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const passwordValid = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,100}$/;
+const phoneValid = /^[0-9]{10}$/;
+
 export default {
   name: "Login",
   setup() {
     // Page Title
-    document.title = "Login | Rusafe";
+    document.title = "Sign Up | Rusafe";
 
     // Get JWT
     if (Cookies.get("jwt")) {
@@ -52,53 +86,64 @@ export default {
 
     // Form Data
     const credentials = reactive({
-      identifier: "",
+      name: "",
+      username: "",
+      email: "",
       password: "",
+      dob: [],
+      img: "",
+      phone: null,
     });
 
-    const validLogin = computed(() => {
+    const validSignup = computed(() => {
       return (
-        credentials.identifier !== "" &&
-        passwordValid.test(credentials.password)
+        credentials.name !== "" &&
+        credentials.username !== "" &&
+        emailValid.test(credentials.email) &&
+        passwordValid.test(credentials.password) &&
+        phoneValid.test(credentials.phone)
       );
     });
 
     // Login
     let authData = ref({
-      jwt: null,
       error: null,
     });
 
-    const { mutate: login } = useMutation(
+    const { mutate: signup } = useMutation(
       gql`
-        mutation login($identifier: String!, $password: String!) {
-          login(identifier: $identifier, password: $password) {
-            jwt
+        mutation signup(
+          $name: String!
+          $username: String!
+          $email: String!
+          $password: String!
+          $phone: Float!
+        ) {
+          signup(
+            name: $name
+            username: $username
+            email: $email
+            password: $password
+            phone: $phone
+          ) {
             error
           }
         }
       `,
       {
         update: (_cache, result) => {
-          if (result.data.login.error) {
-            authData.value.error = result.data.login.error;
+          if (result.data.signup.error) {
+            authData.value.error = result.data.signup.error;
             return;
           }
-
-          if (result.data.login.jwt) {
-            Cookies.set("jwt", result.data.login.jwt, { expires: 365 });
-            router.push("/profile");
-          }
-
-          authData.value = result.data.login;
         },
       }
     );
 
     return {
       credentials,
-      login,
-      validLogin,
+      signup,
+      validSignup,
       authData,
     };
   },
@@ -118,7 +163,7 @@ div.login {
 
   div.title {
     font-size: 3.5vh;
-    margin-bottom: 5vh;
+    margin-bottom: 2vh;
     color: var(--theme-1-100);
     text-transform: uppercase;
   }
@@ -128,18 +173,16 @@ div.login {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3vh;
+    padding: 1vh;
     width: 40%;
-    height: 40vh;
-
-    border-radius: 1.5vh;
+    height: 70vh;
 
     div.error {
       color: red;
       width: 80%;
-      padding: 2vh 3vh;
+      padding: 2vh;
       border-radius: 1vh;
-      margin-bottom: 5vh;
+      margin-bottom: 2vh;
       border: 0.2vh solid var(--theme-4-100);
       background-color: var(--theme-7-040);
       font-size: 2.4vh;
@@ -160,7 +203,7 @@ div.login {
         padding-left: 3vh;
         font-size: 2.5vh;
 
-        margin-bottom: 2.5vh;
+        margin-bottom: 1vh;
 
         background-color: var(--theme-8-100);
         border: 0.3vh solid var(--theme-7-100);
@@ -171,7 +214,7 @@ div.login {
         outline: none;
         text-decoration: none;
         padding: 2vh 5vh;
-        margin-top: 3vh;
+        margin-top: 1vh;
         border-radius: 0.75vh;
         text-transform: uppercase;
         cursor: pointer;
