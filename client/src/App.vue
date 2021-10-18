@@ -2,6 +2,56 @@
   <router-view />
 </template>
 
+<script>
+import { watch } from "vue";
+import { useQuery } from "@vue/apollo-composable";
+import Cookies from "js-cookie";
+import { useStore } from "vuex";
+import router from "./router/index";
+import gql from "graphql-tag";
+
+export default {
+  name: "App",
+  setup() {
+    const store = useStore();
+    const token = Cookies.get("jwt");
+
+    if (token) {
+      const { result } = useQuery(
+        gql`
+          query($jwt: String!) {
+            user(jwt: $jwt) {
+              _id
+              name
+              username
+              img
+              balance
+              phone
+              error
+            }
+          }
+        `,
+        {
+          jwt: token,
+        }
+      );
+
+      watch(result, () => {
+        if (!result.value.user.error) {
+          console.log(result.value);
+          store.commit("userLoggedIn", result.value.user);
+          router.push("/profile");
+        } else {
+          router.push("/");
+        }
+      });
+    } else {
+      router.push("/");
+    }
+  },
+};
+</script>
+
 <style lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Nunito&display=swap");
 

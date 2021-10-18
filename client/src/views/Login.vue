@@ -27,10 +27,24 @@
           Submit
         </button>
       </form>
+      <router-link
+        class="sign-up login-links"
+        v-if="authData.error === 'User not verified. Please verify your OTP'"
+        v-bind:to="{
+          name: 'Otp Verify',
+          params: { identifier: credentials.identifier },
+        }"
+      >
+        Not verified ? Verify OTP
+      </router-link>
       <router-link class="sign-up login-links" to="/signup">
         New here? Sign Up
       </router-link>
-      <router-link class="forgot-password login-links" to="/forgot-password">
+      <router-link
+        v-if="authData.error === 'Incorrect Password'"
+        class="forgot-password login-links"
+        to="/forgot-password"
+      >
         Forgot Password?
       </router-link>
     </div>
@@ -53,11 +67,6 @@ export default {
     document.title = "Login | Rusafe";
 
     const store = useStore();
-
-    // Get JWT
-    if (Cookies.get("jwt")) {
-      router.push("/profile");
-    }
 
     // Form Data
     const credentials = reactive({

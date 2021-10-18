@@ -202,12 +202,6 @@ const resolvers = {
           };
         }
 
-        if (!user.verified) {
-          return {
-            error: "User not verified. Please verify your OTP",
-          };
-        }
-
         const correctPassword = await bcrypt.compare(
           args.password,
           user.password
@@ -216,6 +210,12 @@ const resolvers = {
         if (!correctPassword) {
           return {
             error: "Incorrect Password",
+          };
+        }
+
+        if (!user.verified) {
+          return {
+            error: "User not verified. Please verify your OTP",
           };
         }
 

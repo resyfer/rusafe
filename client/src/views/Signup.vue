@@ -72,7 +72,6 @@ import { computed, reactive, ref } from "vue";
 import { useMutation } from "@vue/apollo-composable";
 import router from "../router/index";
 import gql from "graphql-tag";
-import Cookies from "js-cookie";
 
 const emailValid = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const passwordValid = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,100}$/;
@@ -83,11 +82,6 @@ export default {
   setup() {
     // Page Title
     document.title = "Sign Up | Rusafe";
-
-    // Get JWT
-    if (Cookies.get("jwt")) {
-      router.push("/profile");
-    }
 
     // Form Data
     const credentials = reactive({

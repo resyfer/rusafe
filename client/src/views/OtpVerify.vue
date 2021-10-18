@@ -1,13 +1,8 @@
 <template>
   <div class="verify-otp">
     <div class="title">Verify OTP</div>
-    <div class="error">{{ authDetails.error }}</div>
+    <div class="error" v-if="authDetails.error">{{ authDetails.error }}</div>
     <form>
-      <input
-        type="text"
-        placeholder="Username / Email"
-        v-model.trim="credentials.identifier"
-      />
       <input type="text" placeholder="OTP" v-model.trim="credentials.otp" />
       <button
         type="submit"
@@ -71,7 +66,6 @@ export default {
       `,
       {
         update(_cache, result) {
-          console.log(result);
           if (result.data.otpVerify.error) {
             authDetails.error = result.data.otpVerify.error;
             return;
@@ -134,7 +128,7 @@ div.verify-otp {
     justify-content: center;
     padding: 3vh 0;
     width: 40%;
-    height: 40vh;
+    height: 30vh;
 
     input {
       outline: none;
