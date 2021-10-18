@@ -71,8 +71,10 @@ export default {
       `,
       {
         update(_cache, result) {
+          console.log(result);
           if (result.data.otpVerify.error) {
             authDetails.error = result.data.otpVerify.error;
+            return;
           }
 
           store.commit("userLoggedIn", result.data.otpVerify.user);
@@ -114,16 +116,26 @@ div.verify-otp {
     text-transform: uppercase;
   }
 
+  div.error {
+    color: red;
+    width: calc(40% * 80 / 100);
+    padding: 2vh 3vh;
+    border-radius: 1vh;
+    margin-bottom: 5vh;
+    border: 0.2vh solid var(--theme-4-100);
+    background-color: var(--theme-7-040);
+    font-size: 2.4vh;
+  }
+
   form {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3vh;
+    padding: 3vh 0;
     width: 40%;
     height: 40vh;
 
-    border-radius: 1.5vh;
     input {
       outline: none;
       height: 7vh;
