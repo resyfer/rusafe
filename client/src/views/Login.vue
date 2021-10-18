@@ -1,10 +1,19 @@
 <template>
   <div class="login">
+    <div class="title">Login</div>
     <div class="login-form">
+      <div class="error" v-if="authData.error">{{ authData.error }}</div>
       <form>
-        <div class="error" v-if="authData.error">{{ authData.error }}</div>
-        <input type="text" v-model="credentials.identifier" />
-        <input type="password" v-model="credentials.password" />
+        <input
+          type="text"
+          placeholder="Username / Email"
+          v-model="credentials.identifier"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          v-model="credentials.password"
+        />
         <button
           type="submit"
           v-bind="{ disabled: !validLogin }"
@@ -25,6 +34,7 @@
 <script>
 import { computed, reactive, ref } from "vue";
 import { useMutation } from "@vue/apollo-composable";
+import router from "../router/index";
 import gql from "graphql-tag";
 import Cookies from "js-cookie";
 
@@ -32,7 +42,15 @@ const passwordValid = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,100}$/;
 export default {
   name: "Login",
   setup() {
+    // Page Title
     document.title = "Login | Rusafe";
+
+    // Get JWT
+    if (Cookies.get("jwt")) {
+      router.push("/profile");
+    }
+
+    // Form Data
     const credentials = reactive({
       identifier: "",
       password: "",
@@ -45,6 +63,7 @@ export default {
       );
     });
 
+    // Login
     let authData = ref({
       jwt: null,
       error: null,
@@ -68,6 +87,7 @@ export default {
 
           if (result.data.login.jwt) {
             Cookies.set("jwt", result.data.login.jwt, { expires: 365 });
+            router.push("/profile");
           }
 
           authData.value = result.data.login;
@@ -85,4 +105,100 @@ export default {
 };
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+div.login {
+  background-color: var(--theme-8-100);
+  height: 100vh;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  div.title {
+    font-size: 3.5vh;
+    margin-bottom: 5vh;
+    color: var(--theme-1-100);
+    text-transform: uppercase;
+  }
+
+  div.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3vh;
+    width: 40%;
+    height: 40vh;
+
+    border-radius: 1.5vh;
+
+    div.error {
+      color: red;
+      width: 80%;
+      padding: 2vh 3vh;
+      border-radius: 1vh;
+      margin-bottom: 5vh;
+      border: 0.2vh solid var(--theme-4-100);
+      background-color: var(--theme-7-040);
+      font-size: 2.4vh;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+
+      input {
+        outline: none;
+        height: 7vh;
+        width: 80%;
+        border-radius: 1vh;
+        padding-left: 3vh;
+        font-size: 2.5vh;
+
+        margin-bottom: 2.5vh;
+
+        background-color: var(--theme-8-100);
+        border: 0.3vh solid var(--theme-7-100);
+        color: var(--theme-2-100);
+      }
+
+      button[type="submit"] {
+        outline: none;
+        text-decoration: none;
+        padding: 2vh 5vh;
+        margin-top: 3vh;
+        border-radius: 0.75vh;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 0.2vh solid var(--theme-5-000);
+        background-color: var(--theme-5-100);
+        color: var(--theme-2-100);
+
+        &:hover {
+          border: 0.2vh solid var(--theme-5-100);
+          background-color: var(--theme-8-100);
+          color: var(--theme-5-100);
+          transition: 0.2s ease-in-out;
+        }
+      }
+
+      button[type="submit"]:disabled {
+        background-color: var(--theme-3-100);
+        color: var(--theme-9-100);
+        border: 0.2vh solid var(--theme-9-000);
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: var(--theme-3-100);
+          color: var(--theme-9-100);
+        }
+      }
+    }
+  }
+}
+</style>
