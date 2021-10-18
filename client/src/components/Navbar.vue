@@ -16,6 +16,8 @@
 
 <script>
 import { useStore } from "vuex";
+import Cookies from "js-cookie";
+import router from "../router/index";
 
 export default {
   name: "Navbar",
@@ -23,7 +25,11 @@ export default {
     const store = useStore();
 
     return {
-      logOut: () => store.commit("userLoggedOut"),
+      logOut: () => {
+        store.commit("userLoggedOut");
+        Cookies.set("jwt", "", { expires: 0 });
+        router.push("/");
+      },
     };
   },
 };
