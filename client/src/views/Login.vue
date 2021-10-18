@@ -40,6 +40,7 @@
 <script>
 import { computed, reactive, ref } from "vue";
 import { useMutation } from "@vue/apollo-composable";
+import { useStore } from "vuex";
 import router from "../router/index";
 import gql from "graphql-tag";
 import Cookies from "js-cookie";
@@ -50,6 +51,8 @@ export default {
   setup() {
     // Page Title
     document.title = "Login | Rusafe";
+
+    const store = useStore();
 
     // Get JWT
     if (Cookies.get("jwt")) {
@@ -80,6 +83,14 @@ export default {
         mutation login($identifier: String!, $password: String!) {
           login(identifier: $identifier, password: $password) {
             jwt
+            user {
+              _id
+              name
+              username
+              img
+              balance
+              phone
+            }
             error
           }
         }
@@ -93,6 +104,7 @@ export default {
 
           if (result.data.login.jwt) {
             Cookies.set("jwt", result.data.login.jwt, { expires: 365 });
+            store.commit("userLoggedIn", result.data.login.user);
             router.push("/profile");
           }
 
