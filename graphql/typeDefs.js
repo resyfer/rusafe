@@ -8,6 +8,8 @@ const typeDefs = gql`
   # User
   type UserTransactionParty {
     _id: ID
+    name: String
+    username: String
     email: String
   }
 
@@ -88,7 +90,7 @@ const typeDefs = gql`
     ): Credentials
 
     # Transactions
-    transactions(payer: ID!, payee: ID!, amount: Float!): Void
+    transaction(payer: String!, payee: String!, amount: Float!): Void
   }
 `;
 

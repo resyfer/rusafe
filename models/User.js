@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema({
           type: String,
           required: [true, "Please enter party's name"],
         },
+        username: {
+          type: String,
+          required: [true, "Please enter party's username"],
+        },
         email: {
           type: String,
           required: [true, "Please enter party's email"],

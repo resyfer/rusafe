@@ -10,6 +10,10 @@ const transactionSchema = new mongoose.Schema({
       type: String,
       required: [true, "Please enter payer name"],
     },
+    username: {
+      type: String,
+      required: [true, "Please enter payer username"],
+    },
     email: {
       type: String,
       required: [true, "Please enter payer email"],
@@ -23,6 +27,10 @@ const transactionSchema = new mongoose.Schema({
     name: {
       type: String,
       required: [true, "Please enter payee name"],
+    },
+    username: {
+      type: String,
+      required: [true, "Please enter payee username"],
     },
     email: {
       type: String,

@@ -398,11 +398,26 @@ const resolvers = {
     },
 
     /* Transactions */
-    async transactions(_parent, args, _context, _info) {
+    async transaction(_parent, args, _context, _info) {
       try {
         /* Getting Transaction Parties' Data */
-        const payer = await User.findById(args.payer);
-        const payee = await User.findById(args.payee);
+        const payer = await User.findOne({
+          $or: [{ username: args.payer }, { email: args.payer }],
+        });
+        if (!payer) {
+          return {
+            error: "Payer not found",
+          };
+        }
+
+        const payee = await User.findOne({
+          $or: [{ username: args.payee }, { email: args.payee }],
+        });
+        if (!payee) {
+          return {
+            error: "Payee not found",
+          };
+        }
 
         if (args.amount > payer.balance) {
           return {
@@ -415,11 +430,13 @@ const resolvers = {
           payer: {
             _id: payer._id,
             name: payer.name,
+            username: payer.username,
             email: payer.email,
           },
           payee: {
             _id: payee._id,
             name: payee.name,
+            username: payee.username,
             email: payee.email,
           },
           amount: args.amount,
@@ -432,7 +449,8 @@ const resolvers = {
           category: "withdrawal",
           party: {
             _id: payee._id,
-            name: payee.email,
+            name: payee.name,
+            username: payee.username,
             email: payee.email,
           },
           amount: updatedTransaction.amount,
@@ -447,7 +465,8 @@ const resolvers = {
           category: "deposit",
           party: {
             _id: payer._id,
-            name: payer.email,
+            name: payer.name,
+            username: payer.username,
             email: payer.email,
           },
           amount: updatedTransaction.amount,
