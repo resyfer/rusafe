@@ -66,12 +66,12 @@ export default {
     // Page Title
     document.title = "Login | Rusafe";
 
+    const store = useStore();
+
     // Get JWT
-    if (Cookies.get("jwt")) {
+    if (store.state.isLoggedIn) {
       router.push("/profile");
     }
-
-    const store = useStore();
 
     // Form Data
     const credentials = reactive({
@@ -116,13 +116,12 @@ export default {
             return;
           }
 
+          authData.value = result.data.login;
           if (result.data.login.jwt) {
             Cookies.set("jwt", result.data.login.jwt, { expires: 365 });
             store.commit("userLoggedIn", result.data.login.user);
-            router.push("/profile");
+            location.reload();
           }
-
-          authData.value = result.data.login;
         },
       }
     );
