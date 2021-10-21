@@ -102,9 +102,7 @@ const resolvers = {
           username: args.username,
           email: args.email,
           password: hashedPassword,
-          img:
-            args.img ||
-            "https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no",
+          img: args.img,
           phone: args.phone,
           otp: {
             value: otp,

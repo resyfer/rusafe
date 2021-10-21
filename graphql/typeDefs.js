@@ -69,7 +69,7 @@ const typeDefs = gql`
       username: String!
       email: String!
       password: String!
-      img: String
+      img: String!
       phone: Float!
     ): Void
 

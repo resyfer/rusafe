@@ -48,9 +48,9 @@
               email: credentials.email,
               password: credentials.password,
               img:
-                credentials.img !== ''
-                  ? credentials.img
-                  : `https://avatars.dicebear.com/api/identicon/${credentials.username}.svg`,
+                credentials.img === ''
+                  ? `https://avatars.dicebear.com/api/identicon/${credentials.username}.svg`
+                  : credentials.img,
               phone: credentials.phone,
             })
           "
@@ -122,6 +122,7 @@ export default {
           $username: String!
           $email: String!
           $password: String!
+          $img: String!
           $phone: Float!
         ) {
           signup(
@@ -129,6 +130,7 @@ export default {
             username: $username
             email: $email
             password: $password
+            img: $img
             phone: $phone
           ) {
             error
