@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
 import Profile from "../views/Profile.vue";
+import History from "../views/History.vue";
 import OtpVerify from "../views/OtpVerify.vue";
 
 const routes = [
@@ -31,6 +32,11 @@ const routes = [
     path: "/otp-verify/:identifier",
     name: "Otp Verify",
     component: OtpVerify,
+  },
+  {
+    path: "/history",
+    name: "History",
+    component: History,
   },
 ];
 
