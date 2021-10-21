@@ -24,9 +24,21 @@ export default {
               _id
               name
               username
+              email
               img
               balance
               phone
+              transactions {
+                _id
+                amount
+                category
+                party {
+                  _id
+                  name
+                  username
+                  email
+                }
+              }
               error
             }
           }
@@ -59,6 +71,20 @@ export default {
   padding: 0;
   font-family: "Nunito", sans-serif;
   box-sizing: border-box;
+}
+
+/**Scrollbar**/
+::-webkit-scrollbar {
+  width: 1vh;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--theme-8-100);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3vh;
+  background: var(--theme-4-100);
 }
 
 :root {
