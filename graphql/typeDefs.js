@@ -55,7 +55,6 @@ const typeDefs = gql`
 
   type Query {
     user(jwt: String!): User
-    previewUser(identifier: String!): PreviewUser
   }
 
   type Credentials {
@@ -91,6 +90,7 @@ const typeDefs = gql`
 
     # Transactions
     transaction(payer: String!, payee: String!, amount: Float!): Void
+    previewUser(identifier: String!): PreviewUser
   }
 `;
 

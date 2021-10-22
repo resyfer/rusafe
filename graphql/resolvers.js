@@ -32,31 +32,6 @@ const resolvers = {
         };
       }
     },
-
-    async previewUser(_parent, args, _context, _info) {
-      try {
-        const user = await User.findOne({
-          $or: [{ username: args.identifier }, { email: args.identifier }],
-        });
-
-        if (!user) {
-          return {
-            error: "User doesn't exist",
-          };
-        }
-
-        return {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-        };
-      } catch (err) {
-        console.log(err);
-        return {
-          error: "Internal Server Error. Please try again later.",
-        };
-      }
-    },
   },
 
   Mutation: {
@@ -512,6 +487,35 @@ const resolvers = {
             console.log(error);
           }
         );
+
+        return {
+          error: null,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
+        };
+      }
+    },
+
+    async previewUser(_parent, args, _context, _info) {
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
+        }
+
+        return {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+        };
       } catch (err) {
         console.log(err);
         return {

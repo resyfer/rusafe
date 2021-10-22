@@ -5,6 +5,7 @@ import Login from "../views/Login.vue";
 import Signup from "../views/Signup.vue";
 import Profile from "../views/Profile.vue";
 import History from "../views/History.vue";
+import Pay from "../views/Pay.vue";
 import OtpVerify from "../views/OtpVerify.vue";
 
 const routes = [
@@ -37,6 +38,11 @@ const routes = [
     path: "/history",
     name: "History",
     component: History,
+  },
+  {
+    path: "/pay",
+    name: "Pay",
+    component: Pay,
   },
 ];
 
