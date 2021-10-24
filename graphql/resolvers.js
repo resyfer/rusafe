@@ -230,7 +230,7 @@ const resolvers = {
 
         user.otp.value = otp;
         user.otp.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
-        await user.save();
+        const updatedUser = await user.save();
 
         let transporter = nodemailer.createTransport({
           host: "smtp.gmail.com",

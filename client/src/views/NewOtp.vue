@@ -1,113 +1,80 @@
 <template>
-  <div class="verify-otp">
-    <div class="title">Verify OTP</div>
-
-    <div class="otp-help">
-      An OTP was sent to your email account. Please verify your OTP
-    </div>
+  <div class="new-otp">
+    <div class="title">New OTP</div>
 
     <div class="error" v-if="authDetails.error">{{ authDetails.error }}</div>
     <form>
-      <input type="text" placeholder="OTP" v-model.trim="credentials.otp" />
+      <input
+        type="text"
+        placeholder="Username / Email"
+        v-model.trim="credentials.identifier"
+      />
       <button
         type="submit"
-        v-bind="{ disabled: !validOtp }"
         @click.prevent="
-          verifyOtp({
+          newOtp({
             identifier: credentials.identifier,
-            otp: credentials.otp,
           })
         "
       >
-        Verify
+        Request OTP
       </button>
     </form>
-    <router-link
-      v-if="authDetails.error === 'OTP Expired. Please request a new OTP'"
-      class="new-otp"
-      to="/new-otp"
-    >
-      Expired OTP? Request New
-    </router-link>
   </div>
 </template>
 
 <script>
-import { reactive, computed } from "vue";
-import { useRoute } from "vue-router";
-import { useStore } from "vuex";
+import { reactive, watch } from "vue";
 import { useMutation } from "@vue/apollo-composable";
-import Cookies from "js-cookie";
 import gql from "graphql-tag";
-import router from "../router";
+
+import router from "../router/index";
 
 export default {
-  name: "OtpVerify",
+  name: "NewOtp",
   setup() {
-    const route = useRoute();
-    const store = useStore();
-
-    // Get JWT
-    if (Cookies.get("jwt")) {
-      router.push("/profile");
-    }
+    document.title = "New OTP | Rusafe";
 
     const credentials = reactive({
-      identifier: route.params.identifier,
-      otp: "",
+      identifier: "",
     });
 
     const authDetails = reactive({
-      error: null,
+      error: "",
     });
 
-    const { mutate: verifyOtp } = useMutation(
+    watch(authDetails, () => {
+      if (authDetails.error == null) {
+        router.push(`/otp-verify/${credentials.identifier}`);
+      }
+    });
+
+    const { mutate: newOtp } = useMutation(
       gql`
-        mutation verifyOtp($identifier: String!, $otp: String!) {
-          otpVerify(identifier: $identifier, otp: $otp) {
-            jwt
-            user {
-              _id
-              name
-              username
-              img
-              balance
-              phone
-            }
+        mutation newOtp($identifier: String!) {
+          newOtp(identifier: $identifier) {
             error
           }
         }
       `,
       {
         update(_cache, result) {
-          if (result.data.otpVerify.error) {
-            authDetails.error = result.data.otpVerify.error;
-            return;
-          }
-
-          store.commit("userLoggedIn", result.data.otpVerify.user);
-          Cookies.set("jwt", result.data.otpVerify.jwt, { expires: 365 });
-          location.reload();
+          authDetails.error = result.data.newOtp.error;
         },
       }
     );
 
-    const validOtp = computed(() => {
-      return credentials.identifier !== "" && credentials.otp.length === 8;
-    });
-
     return {
       credentials,
-      verifyOtp,
       authDetails,
-      validOtp,
+      newOtp,
     };
   },
 };
 </script>
 
 <style lang="scss">
-div.verify-otp {
+div.new-otp {
   background-color: var(--theme-8-100);
   height: 100vh;
   width: 100%;
@@ -178,18 +145,6 @@ div.verify-otp {
         color: var(--theme-5-100);
         transition: 0.2s ease-in-out;
       }
-
-      &:disabled {
-        background-color: var(--theme-3-100);
-        color: var(--theme-9-100);
-        border: 0.2vh solid var(--theme-9-000);
-        cursor: not-allowed;
-
-        &:hover {
-          background-color: var(--theme-3-100);
-          color: var(--theme-9-100);
-        }
-      }
     }
   }
 
@@ -198,12 +153,6 @@ div.verify-otp {
     margin-top: 1vh;
     text-decoration: underline;
     cursor: pointer;
-  }
-
-  .otp-help {
-    color: var(--theme-0-100);
-    margin-top: 3vh;
-    margin-bottom: 3vh;
   }
 }
 </style>

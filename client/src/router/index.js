@@ -7,6 +7,7 @@ import Profile from "../views/Profile.vue";
 import History from "../views/History.vue";
 import Pay from "../views/Pay.vue";
 import OtpVerify from "../views/OtpVerify.vue";
+import NewOtp from "../views/NewOtp.vue";
 
 const routes = [
   {
@@ -33,6 +34,11 @@ const routes = [
     path: "/otp-verify/:identifier",
     name: "Otp Verify",
     component: OtpVerify,
+  },
+  {
+    path: "/new-otp",
+    name: "New Otp",
+    component: NewOtp,
   },
   {
     path: "/history",

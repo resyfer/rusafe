@@ -30,7 +30,7 @@
         />
         <input
           type="text"
-          placeholder="Profile Picture Link"
+          placeholder="Profile Picture Link (Optional)"
           v-model.trim="credentials.img"
         />
         <input
@@ -61,6 +61,10 @@
       <router-link class="signup-links" to="/login">
         Already registered? Login
       </router-link>
+
+      <div class="password-rules" to="/login">
+        Password must have atleast 8 characters, a special symbol and a number
+      </div>
     </div>
 
     <!-- TODO: Add Password rules -->
@@ -261,6 +265,11 @@ div.login {
       text-decoration: underline;
       cursor: pointer;
     }
+  }
+
+  .password-rules {
+    color: var(--theme-0-100);
+    margin-top: 3vh;
   }
 }
 </style>
