@@ -21,6 +21,9 @@
 <script>
 export default {
   name: "Home",
+  setup() {
+    document.title = "Rusafe";
+  },
 };
 </script>
 

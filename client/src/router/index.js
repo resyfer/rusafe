@@ -8,6 +8,8 @@ import History from "../views/History.vue";
 import Pay from "../views/Pay.vue";
 import OtpVerify from "../views/OtpVerify.vue";
 import NewOtp from "../views/NewOtp.vue";
+import ForgotPassword from "../views/ForgotPassword.vue";
+import AuthVerify from "../views/AuthVerify.vue";
 
 const routes = [
   {
@@ -39,6 +41,16 @@ const routes = [
     path: "/new-otp",
     name: "New Otp",
     component: NewOtp,
+  },
+  {
+    path: "/forgot-password",
+    name: "Forgot Password",
+    component: ForgotPassword,
+  },
+  {
+    path: "/auth-verify/:identifier",
+    name: "Auth Verify",
+    component: AuthVerify,
   },
   {
     path: "/history",

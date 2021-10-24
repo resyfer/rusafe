@@ -1,6 +1,6 @@
 <template>
-  <div class="new-otp">
-    <div class="title">New OTP</div>
+  <div class="forgot-password">
+    <div class="title">Forgot Password</div>
 
     <div class="error" v-if="authDetails.error">{{ authDetails.error }}</div>
     <form>
@@ -12,28 +12,35 @@
       <button
         type="submit"
         @click.prevent="
-          newOtp({
+          generateString({
             identifier: credentials.identifier,
           })
         "
       >
-        Request OTP
+        Forgot Password
       </button>
     </form>
+    <router-link
+      v-if="authDetails.error === 'Verify OTP first'"
+      class="forgot-password-help"
+      v-bind:to="`/otp-verify/${credentials.identifier}`"
+    >
+      Verify OTP
+    </router-link>
   </div>
 </template>
 
 <script>
 import { reactive, watch } from "vue";
 import { useMutation } from "@vue/apollo-composable";
-import gql from "graphql-tag";
 import Cookies from "js-cookie";
-import router from "../router/index";
+import gql from "graphql-tag";
+import router from "../router";
 
 export default {
-  name: "NewOtp",
+  name: "ForgotPassword",
   setup() {
-    document.title = "New OTP | Rusafe";
+    document.title = "Forgot Password | Rusafe";
 
     // Get JWT
     if (Cookies.get("jwt")) {
@@ -50,21 +57,21 @@ export default {
 
     watch(authDetails, () => {
       if (authDetails.error == null) {
-        router.push(`/otp-verify/${credentials.identifier}`);
+        router.push(`/auth-verify/${credentials.identifier}`);
       }
     });
 
-    const { mutate: newOtp } = useMutation(
+    const { mutate: generateString } = useMutation(
       gql`
-        mutation newOtp($identifier: String!) {
-          newOtp(identifier: $identifier) {
+        mutation generate($identifier: String!) {
+          generateString(identifier: $identifier) {
             error
           }
         }
       `,
       {
         update(_cache, result) {
-          authDetails.error = result.data.newOtp.error;
+          authDetails.error = result.data.generateString.error;
         },
       }
     );
@@ -72,14 +79,14 @@ export default {
     return {
       credentials,
       authDetails,
-      newOtp,
+      generateString,
     };
   },
 };
 </script>
 
 <style lang="scss">
-div.new-otp {
+div.forgot-password {
   background-color: var(--theme-8-100);
   height: 100vh;
   width: 100%;
@@ -153,11 +160,10 @@ div.new-otp {
     }
   }
 
-  .new-otp {
+  .forgot-password-help {
     color: var(--theme-0-100);
-    margin-top: 1vh;
-    text-decoration: underline;
-    cursor: pointer;
+    margin-top: 3vh;
+    margin-bottom: 3vh;
   }
 }
 </style>

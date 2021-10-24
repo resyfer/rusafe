@@ -1,39 +1,52 @@
 <template>
-  <div class="new-otp">
-    <div class="title">New OTP</div>
+  <div class="auth-verify">
+    <div class="title">New Password</div>
 
     <div class="error" v-if="authDetails.error">{{ authDetails.error }}</div>
     <form>
       <input
         type="text"
-        placeholder="Username / Email"
-        v-model.trim="credentials.identifier"
+        placeholder="Auth String*"
+        v-model.trim="credentials.authString"
+      />
+      <input
+        type="password"
+        placeholder="New Password*"
+        v-model="credentials.newPassword"
       />
       <button
         type="submit"
+        v-bind="{ disabled: !validForm }"
         @click.prevent="
-          newOtp({
+          newPassword({
             identifier: credentials.identifier,
+            authString: credentials.authString,
+            newPassword: credentials.newPassword,
           })
         "
       >
-        Request OTP
+        New Password
       </button>
     </form>
   </div>
 </template>
 
 <script>
-import { reactive, watch } from "vue";
+import { reactive, computed } from "vue";
+import { useRoute } from "vue-router";
 import { useMutation } from "@vue/apollo-composable";
-import gql from "graphql-tag";
 import Cookies from "js-cookie";
-import router from "../router/index";
+import gql from "graphql-tag";
+import router from "../router";
+
+const passwordValid = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,100}$/;
 
 export default {
-  name: "NewOtp",
+  name: "AuthVerify",
   setup() {
-    document.title = "New OTP | Rusafe";
+    const route = useRoute();
+
+    document.title = "New Password | Rusafe";
 
     // Get JWT
     if (Cookies.get("jwt")) {
@@ -41,45 +54,64 @@ export default {
     }
 
     const credentials = reactive({
-      identifier: "",
+      identifier: route.params.identifier,
+      authString: "",
+      newPassword: "",
     });
 
     const authDetails = reactive({
-      error: "",
+      error: null,
     });
 
-    watch(authDetails, () => {
-      if (authDetails.error == null) {
-        router.push(`/otp-verify/${credentials.identifier}`);
-      }
-    });
-
-    const { mutate: newOtp } = useMutation(
+    const { mutate: newPassword } = useMutation(
       gql`
-        mutation newOtp($identifier: String!) {
-          newOtp(identifier: $identifier) {
+        mutation newPassword(
+          $identifier: String!
+          $authString: String!
+          $newPassword: String!
+        ) {
+          forgotPassword(
+            identifier: $identifier
+            authString: $authString
+            newPassword: $newPassword
+          ) {
             error
+            jwt
           }
         }
       `,
       {
         update(_cache, result) {
-          authDetails.error = result.data.newOtp.error;
+          if (result.data.forgotPassword.error) {
+            authDetails.error = result.data.forgotPassword.error;
+            return;
+          }
+
+          Cookies.set("jwt", result.data.forgotPassword.jwt, { expires: 365 });
+          location.reload();
         },
       }
     );
 
+    const validForm = computed(() => {
+      return (
+        credentials.authString != "" &&
+        passwordValid.test(credentials.newPassword)
+      );
+    });
+
     return {
       credentials,
+      newPassword,
       authDetails,
-      newOtp,
+      validForm,
     };
   },
 };
 </script>
 
 <style lang="scss">
-div.new-otp {
+div.auth-verify {
   background-color: var(--theme-8-100);
   height: 100vh;
   width: 100%;
@@ -114,7 +146,7 @@ div.new-otp {
     justify-content: center;
     padding: 3vh 0;
     width: 40%;
-    height: 30vh;
+    height: 50vh;
 
     input {
       outline: none;
@@ -150,6 +182,18 @@ div.new-otp {
         color: var(--theme-5-100);
         transition: 0.2s ease-in-out;
       }
+
+      &:disabled {
+        background-color: var(--theme-3-100);
+        color: var(--theme-9-100);
+        border: 0.2vh solid var(--theme-9-000);
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: var(--theme-3-100);
+          color: var(--theme-9-100);
+        }
+      }
     }
   }
 
@@ -158,6 +202,12 @@ div.new-otp {
     margin-top: 1vh;
     text-decoration: underline;
     cursor: pointer;
+  }
+
+  .otp-help {
+    color: var(--theme-0-100);
+    margin-top: 3vh;
+    margin-bottom: 3vh;
   }
 }
 </style>

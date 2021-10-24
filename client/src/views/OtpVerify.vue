@@ -47,6 +47,8 @@ export default {
     const route = useRoute();
     const store = useStore();
 
+    document.title = "Verify OTP | Rusafe";
+
     // Get JWT
     if (Cookies.get("jwt")) {
       router.push("/profile");
