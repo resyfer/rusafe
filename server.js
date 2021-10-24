@@ -24,11 +24,6 @@ require("dotenv").config({ path: "./config/.env" });
   await mongoose.connect(process.env.MONGO_URI);
   console.log("DB Connected");
 
-  process.env.NODE_ENV == "production" &&
-    app.get("*", (req, res) => {
-      res.status(200).sendFile(path.resolve("client", "dist", "index.html"));
-    });
-
   app.listen(process.env.PORT, () => {
     console.log(
       `Server connected to ${process.env.PORT} in mode ${process.env.NODE_ENV}`
