@@ -1,7 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const path = require("path");
-const path = require("cors");
+const cors = require("cors");
 const { ApolloServer } = require("apollo-server-express");
 
 const typeDefs = require("./graphql/typeDefs");
