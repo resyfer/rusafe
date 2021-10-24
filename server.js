@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 const { ApolloServer } = require("apollo-server-express");
 
 const typeDefs = require("./graphql/typeDefs");
@@ -12,6 +13,11 @@ require("dotenv").config({ path: "./config/.env" });
     typeDefs,
     resolvers,
   });
+
+  process.env.NODE_ENV == "production" &&
+    app.get("/", (req, res) => {
+      res.status(200).sendFile(path.resolve("client", "dist", "index.html"));
+    });
 
   await server.start();
   server.applyMiddleware({ app });

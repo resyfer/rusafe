@@ -13,7 +13,7 @@ const apolloClient = new ApolloClient({
   uri:
     process.env.NODE_ENV == "development"
       ? "http://localhost:5000/graphql"
-      : "",
+      : "https://resyfer-rusafe.herokuapp.com/graphql",
 });
 
 const app = createApp({
