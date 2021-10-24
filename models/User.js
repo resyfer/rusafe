@@ -17,10 +17,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter password"],
   },
-  dob: {
-    type: [Number],
-    required: true,
-  },
   balance: {
     type: Number,
     default: 10.0, //For testing
@@ -31,8 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   img: {
     type: String,
-    default:
-      "https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no",
+    required: false,
   },
   transactions: [
     {
@@ -52,6 +47,10 @@ const userSchema = new mongoose.Schema({
         name: {
           type: String,
           required: [true, "Please enter party's name"],
+        },
+        username: {
+          type: String,
+          required: [true, "Please enter party's username"],
         },
         email: {
           type: String,

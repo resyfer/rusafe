@@ -8,6 +8,8 @@ const typeDefs = gql`
   # User
   type UserTransactionParty {
     _id: ID
+    name: String
+    username: String
     email: String
   }
 
@@ -34,7 +36,6 @@ const typeDefs = gql`
     username: String
     email: String
     password: String
-    dob: [Int]
     balance: Float
     verified: Boolean
     img: String
@@ -54,7 +55,6 @@ const typeDefs = gql`
 
   type Query {
     user(jwt: String!): User
-    previewUser(identifier: String!): PreviewUser
   }
 
   type Credentials {
@@ -70,8 +70,7 @@ const typeDefs = gql`
       username: String!
       email: String!
       password: String!
-      dob: [Int!]!
-      img: String
+      img: String!
       phone: Float!
     ): Void
 
@@ -90,7 +89,8 @@ const typeDefs = gql`
     ): Credentials
 
     # Transactions
-    transactions(payer: ID!, payee: ID!, amount: Float!): Void
+    transaction(payer: String!, payee: String!, amount: Float!): Void
+    previewUser(identifier: String!): PreviewUser
   }
 `;
 

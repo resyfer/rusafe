@@ -32,31 +32,6 @@ const resolvers = {
         };
       }
     },
-
-    async previewUser(_parent, args, _context, _info) {
-      try {
-        const user = await User.findOne({
-          $or: [{ username: args.identifier }, { email: args.identifier }],
-        });
-
-        if (!user) {
-          return {
-            error: "User doesn't exist",
-          };
-        }
-
-        return {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-        };
-      } catch (err) {
-        console.log(err);
-        return {
-          error: "Internal Server Error. Please try again later.",
-        };
-      }
-    },
   },
 
   Mutation: {
@@ -102,10 +77,7 @@ const resolvers = {
           username: args.username,
           email: args.email,
           password: hashedPassword,
-          dob: args.dob,
-          img:
-            args.img ||
-            "https://lh3.googleusercontent.com/pw/AM-JKLUNRRuOsbT0GQXmZZyCkGOvubc1i_iB7UioMSxN1gmq6jiTMRx2AbFSy5IYHVk6KVJc_Mrot_0H5PEM_pHsHUbJo4DP_5Cs85Y4g1lsdrSwJk6LJHo1wREYSpEdrA_upsHleeL-P9YN8jL6hhf0ZXlq=s225-no",
+          img: args.img,
           phone: args.phone,
           otp: {
             value: otp,
@@ -161,7 +133,7 @@ const resolvers = {
 
         if (Date.now() > user.otp.expiry) {
           return {
-            error: "OTP Expired, please request a new OTP",
+            error: "OTP Expired. Please request a new OTP",
           };
         }
 
@@ -193,12 +165,6 @@ const resolvers = {
     // TODO: Update Login Auth System to 2FA using Auth Strings
     async login(_parent, args, _context, _info) {
       try {
-        if (!emailValid.test(args.email)) {
-          return {
-            error: "Please enter valid email",
-          };
-        }
-
         const user = await User.findOne({
           $or: [{ username: args.identifier }, { email: args.identifier }],
         });
@@ -206,12 +172,6 @@ const resolvers = {
         if (!user) {
           return {
             error: "User doesn't exist",
-          };
-        }
-
-        if (!user.verified) {
-          return {
-            error: "User not verified. Please verify your OTP",
           };
         }
 
@@ -223,6 +183,12 @@ const resolvers = {
         if (!correctPassword) {
           return {
             error: "Incorrect Password",
+          };
+        }
+
+        if (!user.verified) {
+          return {
+            error: "User not verified. Please verify your OTP",
           };
         }
 
@@ -264,7 +230,7 @@ const resolvers = {
 
         user.otp.value = otp;
         user.otp.expiry = Date.now() + 2 * 24 * 60 * 60 * 1000;
-        await user.save();
+        const updatedUser = await user.save();
 
         let transporter = nodemailer.createTransport({
           host: "smtp.gmail.com",
@@ -407,11 +373,26 @@ const resolvers = {
     },
 
     /* Transactions */
-    async transactions(_parent, args, _context, _info) {
+    async transaction(_parent, args, _context, _info) {
       try {
         /* Getting Transaction Parties' Data */
-        const payer = await User.findById(args.payer);
-        const payee = await User.findById(args.payee);
+        const payer = await User.findOne({
+          $or: [{ username: args.payer }, { email: args.payer }],
+        });
+        if (!payer) {
+          return {
+            error: "Payer not found",
+          };
+        }
+
+        const payee = await User.findOne({
+          $or: [{ username: args.payee }, { email: args.payee }],
+        });
+        if (!payee) {
+          return {
+            error: "Payee not found",
+          };
+        }
 
         if (args.amount > payer.balance) {
           return {
@@ -424,11 +405,13 @@ const resolvers = {
           payer: {
             _id: payer._id,
             name: payer.name,
+            username: payer.username,
             email: payer.email,
           },
           payee: {
             _id: payee._id,
             name: payee.name,
+            username: payee.username,
             email: payee.email,
           },
           amount: args.amount,
@@ -441,7 +424,8 @@ const resolvers = {
           category: "withdrawal",
           party: {
             _id: payee._id,
-            name: payee.email,
+            name: payee.name,
+            username: payee.username,
             email: payee.email,
           },
           amount: updatedTransaction.amount,
@@ -456,7 +440,8 @@ const resolvers = {
           category: "deposit",
           party: {
             _id: payer._id,
-            name: payer.email,
+            name: payer.name,
+            username: payer.username,
             email: payer.email,
           },
           amount: updatedTransaction.amount,
@@ -502,6 +487,35 @@ const resolvers = {
             console.log(error);
           }
         );
+
+        return {
+          error: null,
+        };
+      } catch (err) {
+        console.log(err);
+        return {
+          error: "Internal Server Error. Please try again later.",
+        };
+      }
+    },
+
+    async previewUser(_parent, args, _context, _info) {
+      try {
+        const user = await User.findOne({
+          $or: [{ username: args.identifier }, { email: args.identifier }],
+        });
+
+        if (!user) {
+          return {
+            error: "User doesn't exist",
+          };
+        }
+
+        return {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+        };
       } catch (err) {
         console.log(err);
         return {
