@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "cd client && npx vue-cli-service build"
+    "build": "echo 'build done'"
   },
   "dependencies": {
     "apollo-server-express": "^3.4.0",
