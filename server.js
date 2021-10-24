@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const path = require("cors");
 const { ApolloServer } = require("apollo-server-express");
 
 const typeDefs = require("./graphql/typeDefs");
@@ -9,6 +10,8 @@ require("dotenv").config({ path: "./config/.env" });
 
 (async () => {
   const app = express();
+  app.use(cors());
+
   const server = new ApolloServer({
     typeDefs,
     resolvers,
